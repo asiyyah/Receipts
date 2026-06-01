@@ -1,44 +1,51 @@
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import categories from '../data/categories'
+import { useState } from "react";
+import { motion } from "framer-motion";
+import categories from "../data/categories";
+
+const categoryIds = categories.map((cat) => cat.id);
 
 export default function ExpenseForm({ onAdd }) {
-  const [amount, setAmount] = useState('')
-  const [category, setCategory] = useState('')
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0])
-  const [errors, setErrors] = useState({})
+  const [amount, setAmount] = useState("");
+  const [category, setCategory] = useState("");
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [errors, setErrors] = useState({});
 
   function validate() {
-    const errs = {}
-    if (!amount || isNaN(amount) || Number(amount) <= 0) {
-      errs.amount = 'Enter a valid amount'
+    const errs = {};
+    const numericAmount = Number(amount);
+
+    if (!amount || !Number.isFinite(numericAmount) || numericAmount <= 0) {
+      errs.amount = "Enter a valid amount";
     }
-    if (!category) {
-      errs.category = 'Select a category'
+    if (!category || !categoryIds.includes(category)) {
+      errs.category = "Select a category";
     }
     if (!date) {
-      errs.date = 'Pick a date'
+      errs.date = "Pick a date";
     }
-    return errs
+    return errs;
   }
 
   function handleSubmit(e) {
-    e.preventDefault()
-    const errs = validate()
-    setErrors(errs)
-    if (Object.keys(errs).length > 0) return
+    e.preventDefault();
+    const errs = validate();
+    setErrors(errs);
+    if (Object.keys(errs).length > 0) return;
 
     onAdd({
-      id: Date.now().toString(),
+      id:
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : Date.now().toString(),
       amount: Number(amount),
       category,
       date,
-    })
+    });
 
-    setAmount('')
-    setCategory('')
-    setDate(new Date().toISOString().split('T')[0])
-    setErrors({})
+    setAmount("");
+    setCategory("");
+    setDate(new Date().toISOString().split("T")[0]);
+    setErrors({});
   }
 
   return (
@@ -51,32 +58,56 @@ export default function ExpenseForm({ onAdd }) {
       <h2 className="text-lg font-semibold text-calm-900 mb-4">Add Expense</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-calm-600 mb-1.5">
+          <label
+            htmlFor="expense-amount"
+            className="block text-sm font-medium text-calm-600 mb-1.5"
+          >
             Amount (₦)
           </label>
           <input
+            id="expense-amount"
             type="number"
+            min="1"
+            step="1"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="0"
+            aria-invalid={Boolean(errors.amount)}
+            aria-describedby={
+              errors.amount ? "expense-amount-error" : undefined
+            }
             className={`w-full px-4 py-2.5 rounded-xl border ${
-              errors.amount ? 'border-red-300 bg-red-50' : 'border-calm-200'
+              errors.amount ? "border-red-300 bg-red-50" : "border-calm-200"
             } focus:outline-none focus:ring-2 focus:ring-calm-300 focus:border-transparent transition-all text-calm-900 placeholder-calm-300`}
           />
           {errors.amount && (
-            <p className="text-red-400 text-xs mt-1">{errors.amount}</p>
+            <p
+              id="expense-amount-error"
+              role="alert"
+              className="text-red-400 text-xs mt-1"
+            >
+              {errors.amount}
+            </p>
           )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-calm-600 mb-1.5">
+          <label
+            htmlFor="expense-category"
+            className="block text-sm font-medium text-calm-600 mb-1.5"
+          >
             Category
           </label>
           <select
+            id="expense-category"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
+            aria-invalid={Boolean(errors.category)}
+            aria-describedby={
+              errors.category ? "expense-category-error" : undefined
+            }
             className={`w-full px-4 py-2.5 rounded-xl border ${
-              errors.category ? 'border-red-300 bg-red-50' : 'border-calm-200'
+              errors.category ? "border-red-300 bg-red-50" : "border-calm-200"
             } focus:outline-none focus:ring-2 focus:ring-calm-300 focus:border-transparent transition-all text-calm-900 bg-white`}
           >
             <option value="">Select category</option>
@@ -87,24 +118,42 @@ export default function ExpenseForm({ onAdd }) {
             ))}
           </select>
           {errors.category && (
-            <p className="text-red-400 text-xs mt-1">{errors.category}</p>
+            <p
+              id="expense-category-error"
+              role="alert"
+              className="text-red-400 text-xs mt-1"
+            >
+              {errors.category}
+            </p>
           )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-calm-600 mb-1.5">
+          <label
+            htmlFor="expense-date"
+            className="block text-sm font-medium text-calm-600 mb-1.5"
+          >
             Date
           </label>
           <input
+            id="expense-date"
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
+            aria-invalid={Boolean(errors.date)}
+            aria-describedby={errors.date ? "expense-date-error" : undefined}
             className={`w-full px-4 py-2.5 rounded-xl border ${
-              errors.date ? 'border-red-300 bg-red-50' : 'border-calm-200'
+              errors.date ? "border-red-300 bg-red-50" : "border-calm-200"
             } focus:outline-none focus:ring-2 focus:ring-calm-300 focus:border-transparent transition-all text-calm-900`}
           />
           {errors.date && (
-            <p className="text-red-400 text-xs mt-1">{errors.date}</p>
+            <p
+              id="expense-date-error"
+              role="alert"
+              className="text-red-400 text-xs mt-1"
+            >
+              {errors.date}
+            </p>
           )}
         </div>
 
@@ -118,5 +167,5 @@ export default function ExpenseForm({ onAdd }) {
         </motion.button>
       </form>
     </motion.div>
-  )
+  );
 }

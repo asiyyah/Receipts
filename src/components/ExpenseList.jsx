@@ -1,29 +1,37 @@
-import { motion, AnimatePresence } from 'framer-motion'
-import categories from '../data/categories'
-import { formatDate } from '../utils/dateHelpers'
-import { formatCurrency } from '../utils/calculations'
+import { motion, AnimatePresence } from "framer-motion";
+import categories from "../data/categories";
+import { formatDate } from "../utils/dateHelpers";
+import { formatCurrency } from "../utils/calculations";
 
 export default function ExpenseList({ expenses, onDelete }) {
   if (expenses.length === 0) {
     return (
       <div className="bg-white rounded-2xl shadow-sm border border-calm-200 p-6">
-        <h2 className="text-lg font-semibold text-calm-900 mb-4">Recent Transactions</h2>
+        <h2 className="text-lg font-semibold text-calm-900 mb-4">
+          Recent Transactions
+        </h2>
         <div className="flex items-center justify-center h-24 text-calm-400 text-sm">
           No transactions yet
         </div>
       </div>
-    )
+    );
   }
 
-  const sorted = [...expenses].sort((a, b) => new Date(b.date) - new Date(a.date))
+  const sorted = [...expenses].sort(
+    (a, b) => new Date(b.date) - new Date(a.date),
+  );
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-calm-200 p-6">
-      <h2 className="text-lg font-semibold text-calm-900 mb-4">Recent Transactions</h2>
+      <h2 className="text-lg font-semibold text-calm-900 mb-4">
+        Recent Transactions
+      </h2>
       <div className="space-y-2">
         <AnimatePresence initial={false}>
           {sorted.map((expense, index) => {
-            const cat = categories.find((c) => c.id === expense.category)
+            const cat = categories.find((c) => c.id === expense.category);
+            const label = cat?.label || "Other";
+            const description = `${label} expense on ${formatDate(expense.date)}`;
             return (
               <motion.div
                 key={expense.id}
@@ -34,12 +42,14 @@ export default function ExpenseList({ expenses, onDelete }) {
                 className="flex items-center justify-between p-3 rounded-xl hover:bg-calm-50 transition-colors group"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-lg">{cat?.emoji || '📦'}</span>
+                  <span className="text-lg" aria-hidden="true">
+                    {cat?.emoji || "📦"}
+                  </span>
                   <div>
-                    <p className="text-sm font-medium text-calm-900">
-                      {cat?.label || 'Other'}
+                    <p className="text-sm font-medium text-calm-900">{label}</p>
+                    <p className="text-xs text-calm-400">
+                      {formatDate(expense.date)}
                     </p>
-                    <p className="text-xs text-calm-400">{formatDate(expense.date)}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -47,17 +57,19 @@ export default function ExpenseList({ expenses, onDelete }) {
                     {formatCurrency(expense.amount)}
                   </span>
                   <button
+                    type="button"
                     onClick={() => onDelete(expense.id)}
+                    aria-label={`Delete ${description}`}
                     className="text-calm-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all text-sm"
                   >
                     ✕
                   </button>
                 </div>
               </motion.div>
-            )
+            );
           })}
         </AnimatePresence>
       </div>
     </div>
-  )
+  );
 }
